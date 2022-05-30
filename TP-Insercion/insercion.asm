@@ -10,7 +10,7 @@ extern	fclose
 section	.data
 	numFormat	db	"%lli",0
 
-	fileName	db	"archivo_num.dat",0
+	fileName	db	"archivo_num3.dat",0
 	modo		db	"rb",0
 
 	msjErrorOpen	db	"El archivo no se pudo abrir",0
@@ -26,6 +26,8 @@ section	.data
 
     msjInicioOrd    db  "Inicio ordenamiento",0
 
+    msjInicioCiclo  db  "Iniciando el ciclo de i - long(vector)"
+
 section .bss
 	fileHandle	resq	1
 	registro	resb	3
@@ -35,6 +37,8 @@ section .bss
 	vector      times   30  resq    1
 
     formaOrd    resb    1
+
+    numeroValido    resb    1
 
 section  .text
 main:
@@ -49,7 +53,7 @@ main:
 
     call    inicioOrdenamiento
 
-    ;call    imprimirVector
+    call    imprimirVector
 endProgram:
     ;mov		rcx,debug
 	;sub		rsp,32
@@ -80,7 +84,7 @@ leerArchivo:
 
 leerRegistros:
     mov     rcx,registro
-    mov     rdx,3
+    mov     rdx,4
     mov     r8,1
     mov     r9,qword[fileHandle]
     sub     rsp,32
@@ -96,8 +100,14 @@ leerRegistros:
 	sub		rsp,32
 	call 	sscanf
 	add		rsp,32
+    
+    cmp     rax,1
+    jl      leerRegistros
 
-    call    validarNumeros
+    call    validarNumero
+
+    cmp     byte[numeroValido],'N'
+    je      leerRegistros
 
     call    llenarVector
 
@@ -111,9 +121,25 @@ EOF:
 
     ret
 
-validarNumeros:
+validarNumero:
+;En un BPF c/s de 8 bits los limites son - 2^(n-1) y 2^(n-1)-1 
+;siendo n la cantidad de bits se
+;tiene entonces:
+;Minimo Exponente: - 2^7 | 10 = -128
+;Maximo Exponente: 2^7-1 | 10 = 127
+
+    mov     byte[numeroValido],'S'
+    
+    cmp     qword[numero],-128
+    jl      esInvalido
+
+    cmp     qword[numero],127
+    jg      esInvalido
     ret
 
+esInvalido:
+    mov     byte[numeroValido],'N'
+    ret
 
 llenarVector:
     mov     rbx,0
@@ -163,17 +189,50 @@ pedirFormaOrd:
 inicioOrdenamiento:
     mov		rcx,msjInicioOrd
 	sub		rsp,32
-	call	printf
+	call	puts
 	add		rsp,32
-
-
     
+    call   ordAscendente
+
     ret
 
 ordAscendente:
-    
+    mov     rbx,8
+recorridoOrd:
+    sub 	rdx,rdx
+
+    ;mov     rdx,[vector + rbx]
+    call    swapAscendente
+
+    add     rbx,8
+
+    cmp     qword[contador],rbx
+    jne     recorridoOrd
+
     ret
 
 ordDescendente:
 
+    ret
+
+swapAscendente:
+    sub     rax,rax
+    mov     rax,rbx
+
+inicioSwap:
+    cmp     rax,0
+    je      finSwap
+
+    mov     rcx,[vector + rax]
+    mov     rdx,[vector + rax - 8]
+
+    cmp     rcx,rdx
+    jge     finSwap
+
+    mov     [vector + rax],rdx
+    mov     [vector + rax - 8],rcx
+
+    sub     rax,8
+    jmp     inicioSwap
+finSwap:
     ret
