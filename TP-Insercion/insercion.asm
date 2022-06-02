@@ -21,9 +21,6 @@ section	.data
 
     msjFormaOrd     db  "Ordenar de forma ascendente (A) o descendente (D):",0
 
-    msjDebugAsc     db  "ORDENAMIENTO ASCENDENTE",0
-    msjDebugDesc    db  "ORDENAMENTO DESCENDENTE",0
-
     msjInicioOrd    db  "Inicio ordenamiento",0
 
     msjInicioCiclo  db  "Iniciando el ciclo de i - long(vector)"
@@ -145,17 +142,21 @@ llenarVector:
     mov     rbx,0
 
     mov     rbx,qword[contador]
+    imul    rbx,8
 
     mov     rcx,qword[numero]
     mov     [vector + rbx], rcx
 
-    add     qword[contador],8
+    inc     qword[contador]
     ret
 
 imprimirVector:
 
     mov     rbx,0
+    mov     rcx,qword[contador]
 recorrido:
+    push    rcx
+
     sub 	rdx,rdx
 
     mov     rdx,[vector + rbx]
@@ -167,8 +168,8 @@ recorrido:
 	call	printf
     add     rsp,32
 
-    cmp     qword[contador],rbx
-    jne     recorrido
+    pop     rcx
+    loop    recorrido
 
     ret
 
@@ -192,32 +193,25 @@ inicioOrdenamiento:
 	call	puts
 	add		rsp,32
     
-    call   ordAscendente
+    call   ordenamiento
 
     ret
 
-ordAscendente:
-    mov     rbx,8
+ordenamiento:
+    mov     rbx,1
 recorridoOrd:
-    sub 	rdx,rdx
+    call    swap
 
-    ;mov     rdx,[vector + rbx]
-    call    swapAscendente
-
-    add     rbx,8
+    inc     rbx
 
     cmp     qword[contador],rbx
     jne     recorridoOrd
 
     ret
 
-ordDescendente:
-
-    ret
-
-swapAscendente:
+swap:
     sub     rax,rax
-    mov     rax,rbx
+    imul    rax,rbx,8
 
 inicioSwap:
     cmp     rax,0
@@ -226,13 +220,30 @@ inicioSwap:
     mov     rcx,[vector + rax]
     mov     rdx,[vector + rax - 8]
 
+    cmp     byte[formaOrd],'A'
+    je      swapAscendente
+
+    cmp     byte[formaOrd],'D'
+    je      swapDescendente
+
+    ret
+
+swapAscendente:
     cmp     rcx,rdx
     jge     finSwap
 
+    jmp     swapeo
+
+swapDescendente:
+    cmp     rcx,rdx
+    jle     finSwap
+
+swapeo:
     mov     [vector + rax],rdx
     mov     [vector + rax - 8],rcx
 
     sub     rax,8
     jmp     inicioSwap
+
 finSwap:
     ret
