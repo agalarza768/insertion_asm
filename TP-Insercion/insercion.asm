@@ -48,7 +48,7 @@ main:
 
     call    pedirFormaOrd
 
-    call    inicioOrdenamiento
+    call    ordenarVector
 
     call    imprimirVector
 endProgram:
@@ -187,35 +187,35 @@ pedirFormaOrd:
 
     ret
 
-inicioOrdenamiento:
+ordenarVector:
     mov		rcx,msjInicioOrd
 	sub		rsp,32
 	call	puts
 	add		rsp,32
     
-    call   ordenamiento
+    call   ordenar
 
     ret
 
-ordenamiento:
+ordenar:
     mov     rbx,1
-recorridoOrd:
-    call    swap
+recorridoVector:
+    call    desplazar
 
     inc     rbx
 
     cmp     qword[contador],rbx
-    jne     recorridoOrd
+    jne     recorridoVector
 
     ret
 
-swap:
+desplazar:
     sub     rax,rax
     imul    rax,rbx,8
 
-inicioSwap:
+inicioDesplazamiento:
     cmp     rax,0
-    je      finSwap
+    je      finDesplazamiento
 
     mov     rcx,[vector + rax]
     mov     rdx,[vector + rax - 8]
@@ -230,20 +230,20 @@ inicioSwap:
 
 swapAscendente:
     cmp     rcx,rdx
-    jge     finSwap
+    jge     finDesplazamiento
 
-    jmp     swapeo
+    jmp     swap
 
 swapDescendente:
     cmp     rcx,rdx
-    jle     finSwap
+    jle     finDesplazamiento
 
-swapeo:
+swap:
     mov     [vector + rax],rdx
     mov     [vector + rax - 8],rcx
 
     sub     rax,8
-    jmp     inicioSwap
+    jmp     inicioDesplazamiento
 
-finSwap:
+finDesplazamiento:
     ret
