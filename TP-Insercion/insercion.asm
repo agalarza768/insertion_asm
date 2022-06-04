@@ -8,22 +8,24 @@ extern	fread
 extern	fclose
 
 section	.data
-	numFormat	db	"%lli",0
+	numFormat	db	"%lli ",0
 
 	fileName	db	"archivo_num3.dat",0
 	modo		db	"rb",0
 
 	msjErrorOpen	db	"El archivo no se pudo abrir",0
     debug        db  "AAA",10,0
-    msjDebug        db  "%lli",10,0
+    msjDebug        db  "%lli ",10,0
 
     contador    dq  0
 
     msjFormaOrd     db  "Ordenar de forma ascendente (A) o descendente (D):",0
 
-    msjInicioOrd    db  "Inicio ordenamiento",0
+    msjVectorInicial    db  "Vector inicial:",0
 
-    msjInicioCiclo  db  "Iniciando el ciclo de i - long(vector)"
+    msjInicioCiclo  db  "Iniciando el ciclo de %lli menor a %lli",10,0
+
+    saltoDeLinea    db  "",10,0
 
 section .bss
 	fileHandle	resq	1
@@ -47,7 +49,7 @@ main:
     call    leerArchivo
 
     call    pedirFormaOrd
-
+    
     call    ordenarVector
 
     call    imprimirVector
@@ -81,7 +83,7 @@ leerArchivo:
 
 leerRegistros:
     mov     rcx,registro
-    mov     rdx,4
+    mov     rdx,1
     mov     r8,1
     mov     r9,qword[fileHandle]
     sub     rsp,32
@@ -91,20 +93,21 @@ leerRegistros:
     cmp     rax,0
     jle     EOF
 
-    mov		rcx,registro
-	mov		rdx,numFormat
-	mov		r8,numero
-	sub		rsp,32
-	call 	sscanf
-	add		rsp,32
-    
-    cmp     rax,1
-    jl      leerRegistros
+;   EXPANSION DE BITS -> LLEVAR ESTO AL PRINCIPAL
+    mov     al,byte[registro]
+    cbw
+    cwde
+    cdqe
+    mov     qword[numero],rax
+;   FIN DE EXPANSION DE BITS
 
-    call    validarNumero
-
-    cmp     byte[numeroValido],'N'
-    je      leerRegistros
+;   IMPRESION DE BPF C/S 8 BITS -> TAMBIEN LLEVAR AL OTRO
+    ;mov		rcx,msjDebug
+    ;mov     rdx,qword[numero]
+    ;sub     rsp,32
+	;call	printf
+    ;add     rsp,32
+;   FIN IMPRESION BPF C/S 8 BITS
 
     call    llenarVector
 
@@ -118,25 +121,6 @@ EOF:
 
     ret
 
-validarNumero:
-;En un BPF c/s de 8 bits los limites son - 2^(n-1) y 2^(n-1)-1 
-;siendo n la cantidad de bits se
-;tiene entonces:
-;Minimo Exponente: - 2^7 | 10 = -128
-;Maximo Exponente: 2^7-1 | 10 = 127
-
-    mov     byte[numeroValido],'S'
-    
-    cmp     qword[numero],-128
-    jl      esInvalido
-
-    cmp     qword[numero],127
-    jg      esInvalido
-    ret
-
-esInvalido:
-    mov     byte[numeroValido],'N'
-    ret
 
 llenarVector:
     mov     rbx,0
@@ -154,6 +138,10 @@ imprimirVector:
 
     mov     rbx,0
     mov     rcx,qword[contador]
+
+    cmp     rcx,0
+    je      finRecorrido
+
 recorrido:
     push    rcx
 
@@ -163,7 +151,7 @@ recorrido:
 
     add     rbx,8
 
-    mov		rcx,msjDebug
+    mov		rcx,numFormat
     sub     rsp,32
 	call	printf
     add     rsp,32
@@ -171,6 +159,11 @@ recorrido:
     pop     rcx
     loop    recorrido
 
+finRecorrido:
+    mov     rcx,saltoDeLinea
+    sub     rsp,32
+    call    printf
+    add     rsp,32
     ret
 
 
@@ -188,20 +181,38 @@ pedirFormaOrd:
     ret
 
 ordenarVector:
-    mov		rcx,msjInicioOrd
+
+;ESTO SERA NECESARIO?
+
+    ;ESTO SI ES NECESARIO
+    cmp     qword[contador],1
+    jle     finOrdenamiento
+
+    mov		rcx,msjVectorInicial
 	sub		rsp,32
 	call	puts
 	add		rsp,32
+
+    call    imprimirVector
     
     call   ordenar
 
+finOrdenamiento:
     ret
 
 ordenar:
     mov     rbx,1
 recorridoVector:
-    call    desplazar
 
+    mov		rcx,msjInicioCiclo
+    mov     rdx,rbx
+    mov     r8,qword[contador]
+	sub		rsp,32
+	call	printf
+	add		rsp,32
+
+    call    desplazar
+    
     inc     rbx
 
     cmp     qword[contador],rbx
@@ -243,6 +254,7 @@ swap:
     mov     [vector + rax - 8],rcx
 
     sub     rax,8
+
     jmp     inicioDesplazamiento
 
 finDesplazamiento:
