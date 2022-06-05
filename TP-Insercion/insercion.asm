@@ -208,11 +208,11 @@ recorridoVector:
 	call	printf
 	add		rsp,32
 
-    push    rbx
+    ;push    rbx
 
     call    desplazar
     
-    pop     rbx
+    ;pop     rbx
 
     inc     rbx
 
@@ -227,6 +227,8 @@ desplazar:
     imul    rax,rbx,8
 
 inicioDesplazamiento:
+    ;imul    rax,rbx,8
+
     cmp     rax,0
     je      finDesplazamiento
 
