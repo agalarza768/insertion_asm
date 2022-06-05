@@ -134,30 +134,27 @@ llenarVector:
     inc     qword[contador]
     ret
 
+
 imprimirVector:
-
-    mov     rbx,0
-    mov     rcx,qword[contador]
-
-    cmp     rcx,0
+    cmp     qword[contador],0
     je      finRecorrido
 
+    mov     rbx,0
 recorrido:
-    push    rcx
-
+    imul    rax,rbx,8
     sub 	rdx,rdx
 
-    mov     rdx,[vector + rbx]
+    mov     rdx,[vector + rax]
 
-    add     rbx,8
+    inc     rbx
 
     mov		rcx,numFormat
     sub     rsp,32
 	call	printf
     add     rsp,32
 
-    pop     rcx
-    loop    recorrido
+    cmp     qword[contador],rbx
+    jne     recorrido
 
 finRecorrido:
     mov     rcx,saltoDeLinea
@@ -211,8 +208,12 @@ recorridoVector:
 	call	printf
 	add		rsp,32
 
+    push    rbx
+
     call    desplazar
     
+    pop     rbx
+
     inc     rbx
 
     cmp     qword[contador],rbx
@@ -221,6 +222,7 @@ recorridoVector:
     ret
 
 desplazar:
+
     sub     rax,rax
     imul    rax,rbx,8
 
@@ -254,6 +256,12 @@ swap:
     mov     [vector + rax - 8],rcx
 
     sub     rax,8
+
+    push    rbx
+    push    rax
+    call    imprimirVector
+    pop     rax
+    pop     rbx
 
     jmp     inicioDesplazamiento
 
