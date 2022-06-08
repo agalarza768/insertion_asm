@@ -17,13 +17,15 @@ section	.data
     debug        db  "AAA",10,0
     msjDebug        db  "%lli ",10,0
 
-    contador    dq  0
+    lenVector   dq  0
+    posVector   dq  0
 
     msjFormaOrd     db  "Ordenar de forma ascendente (A) o descendente (D):",0
 
     msjVectorInicial    db  "Vector inicial:",0
 
-    msjInicioCiclo  db  "Iniciando el ciclo de %lli menor a %lli",10,0
+    msjInicioCiclo_i  db  "Iniciando el ciclo de i = %lli menor a %lli",10,0
+    msjInicioCiclo_j  db  "     Iniciando el ciclo de j = %lli mayor a 0",10,0
 
     saltoDeLinea    db  "",10,0
 
@@ -50,7 +52,7 @@ main:
 
     call    pedirFormaOrd
     
-    call    ordenarVector
+    call    insercion
 
     call    imprimirVector
 endProgram:
@@ -125,18 +127,18 @@ EOF:
 llenarVector:
     mov     rbx,0
 
-    mov     rbx,qword[contador]
+    mov     rbx,qword[lenVector]
     imul    rbx,8
 
     mov     rcx,qword[numero]
     mov     [vector + rbx], rcx
 
-    inc     qword[contador]
+    inc     qword[lenVector]
     ret
 
 
 imprimirVector:
-    cmp     qword[contador],0
+    cmp     qword[lenVector],0
     je      finRecorrido
 
     mov     rbx,0
@@ -153,7 +155,7 @@ recorrido:
 	call	printf
     add     rsp,32
 
-    cmp     qword[contador],rbx
+    cmp     qword[lenVector],rbx
     jne     recorrido
 
 finRecorrido:
@@ -177,60 +179,56 @@ pedirFormaOrd:
 
     ret
 
+
+
+insercion:
+    cmp     qword[lenVector],1
+    jle     finInsercion
+
+    call    imprimirVectorInicial
+
+    call    ordenarVector
+    
+
+finInsercion:
+    ret
+
+
 ordenarVector:
+    ;mov     rbx,1
+    mov     qword[posVector],1
 
-;ESTO SERA NECESARIO?
-
-    ;ESTO SI ES NECESARIO
-    cmp     qword[contador],1
-    jle     finOrdenamiento
-
-    mov		rcx,msjVectorInicial
-	sub		rsp,32
-	call	puts
-	add		rsp,32
-
-    call    imprimirVector
-    
-    call   ordenar
-
-finOrdenamiento:
-    ret
-
-ordenar:
-    mov     rbx,1
 recorridoVector:
+    call    imprimirInicioCiclo_i
 
-    mov		rcx,msjInicioCiclo
-    mov     rdx,rbx
-    mov     r8,qword[contador]
-	sub		rsp,32
-	call	printf
-	add		rsp,32
+    call    ciclo_i
 
-    ;push    rbx
+    inc     qword[posVector]
 
-    call    desplazar
-    
-    ;pop     rbx
 
-    inc     rbx
+    mov     rbx,qword[posVector]
+    cmp     rbx,qword[lenVector]
+    jl      recorridoVector
+    ret
 
-    cmp     qword[contador],rbx
-    jne     recorridoVector
+ciclo_i:
+    mov     rbx,qword[posVector]
+
+    call    ciclo_j
 
     ret
 
-desplazar:
+ciclo_j:
+
+    call    imprimirInicioCiclo_j
+
+    dec     rbx
+
+    cmp     rbx,0
+    je      finCiclo_j
 
     sub     rax,rax
     imul    rax,rbx,8
-
-inicioDesplazamiento:
-    ;imul    rax,rbx,8
-
-    cmp     rax,0
-    je      finDesplazamiento
 
     mov     rcx,[vector + rax]
     mov     rdx,[vector + rax - 8]
@@ -241,31 +239,58 @@ inicioDesplazamiento:
     cmp     byte[formaOrd],'D'
     je      swapDescendente
 
+    jmp     ciclo_j
+
+finCiclo_j:
     ret
+
 
 swapAscendente:
     cmp     rcx,rdx
-    jge     finDesplazamiento
+    jge     finSwap
 
     jmp     swap
 
 swapDescendente:
     cmp     rcx,rdx
-    jle     finDesplazamiento
+    jle     finSwap
 
 swap:
     mov     [vector + rax],rdx
     mov     [vector + rax - 8],rcx
 
-    sub     rax,8
+    ;call    imprimirVector
 
-    push    rbx
-    push    rax
+    jmp     ciclo_j
+
+finSwap:
+    ret
+
+imprimirVectorInicial:
+    mov		rcx,msjVectorInicial
+	sub		rsp,32
+	call	puts
+	add		rsp,32
+
     call    imprimirVector
-    pop     rax
-    pop     rbx
+    ret
 
-    jmp     inicioDesplazamiento
+imprimirInicioCiclo_i:
+    mov		rcx,msjInicioCiclo_i
+    mov     rdx,qword[posVector]
+    mov     r8,qword[lenVector]
+	sub		rsp,32
+	call	printf
+	add		rsp,32
 
-finDesplazamiento:
+    ret
+
+
+imprimirInicioCiclo_j:
+    mov		rcx,msjInicioCiclo_j
+    mov     rdx,rbx
+	sub		rsp,32
+	call	printf
+	add		rsp,32
+
     ret
