@@ -10,7 +10,7 @@ extern	fclose
 section	.data
 	numFormat	db	"%lli ",0
 
-	fileName	db	"archivo_num3.dat",0
+	fileName	db	"archivo_num6.dat",0
 	modo		db	"rb",0
 
 	msjErrorOpen	db	"El archivo no se pudo abrir",0
@@ -23,11 +23,14 @@ section	.data
     msjFormaOrd     db  "Ordenar de forma ascendente (A) o descendente (D):",0
 
     msjVectorInicial    db  "Vector inicial:",0
+    msjVectorFinal    db  "Vector final:",0
 
     msjInicioCiclo_i  db  "Iniciando el ciclo de i = %lli menor a %lli",10,0
     msjInicioCiclo_j  db  "     Iniciando el ciclo de j = %lli mayor a 0",10,0
 
     saltoDeLinea    db  "",10,0
+
+    msjEspacios     db  "           ",0
 
 section .bss
 	fileHandle	resq	1
@@ -54,13 +57,8 @@ main:
     
     call    insercion
 
-    call    imprimirVector
+    call    imprimirVectorFinal
 endProgram:
-    ;mov		rcx,debug
-	;sub		rsp,32
-	;call	printf
-	;add		rsp,32
-
     ret
 
 abrirArchivo:
@@ -95,21 +93,11 @@ leerRegistros:
     cmp     rax,0
     jle     EOF
 
-;   EXPANSION DE BITS -> LLEVAR ESTO AL PRINCIPAL
     mov     al,byte[registro]
     cbw
     cwde
     cdqe
     mov     qword[numero],rax
-;   FIN DE EXPANSION DE BITS
-
-;   IMPRESION DE BPF C/S 8 BITS -> TAMBIEN LLEVAR AL OTRO
-    ;mov		rcx,msjDebug
-    ;mov     rdx,qword[numero]
-    ;sub     rsp,32
-	;call	printf
-    ;add     rsp,32
-;   FIN IMPRESION BPF C/S 8 BITS
 
     call    llenarVector
 
@@ -140,6 +128,11 @@ llenarVector:
 imprimirVector:
     cmp     qword[lenVector],0
     je      finRecorrido
+
+    mov     rcx,msjEspacios
+    sub     rsp,32
+    call    printf
+    add     rsp,32
 
     mov     rbx,0
 recorrido:
@@ -195,7 +188,6 @@ finInsercion:
 
 
 ordenarVector:
-    ;mov     rbx,1
     mov     qword[posVector],1
 
 recorridoVector:
@@ -208,7 +200,7 @@ recorridoVector:
 
     mov     rbx,qword[posVector]
     cmp     rbx,qword[lenVector]
-    jl      recorridoVector
+    jne      recorridoVector
     ret
 
 ciclo_i:
@@ -219,10 +211,6 @@ ciclo_i:
     ret
 
 ciclo_j:
-
-    call    imprimirInicioCiclo_j
-
-    dec     rbx
 
     cmp     rbx,0
     je      finCiclo_j
@@ -259,7 +247,12 @@ swap:
     mov     [vector + rax],rdx
     mov     [vector + rax - 8],rcx
 
-    ;call    imprimirVector
+    call    imprimirInicioCiclo_j
+    dec     rbx
+
+    push    rbx
+    call    imprimirVector
+    pop     rbx
 
     jmp     ciclo_j
 
@@ -293,4 +286,14 @@ imprimirInicioCiclo_j:
 	call	printf
 	add		rsp,32
 
+    ret
+
+
+imprimirVectorFinal:
+    mov		rcx,msjVectorFinal
+	sub		rsp,32
+	call	puts
+	add		rsp,32
+
+    call    imprimirVector
     ret
