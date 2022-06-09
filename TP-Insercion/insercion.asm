@@ -10,7 +10,7 @@ extern	fclose
 section	.data
 	numFormat	db	"%lli ",0
 
-	fileName	db	"archivo_num6.dat",0
+	fileName	db	"archivo_num3.dat",0
 	modo		db	"rb",0
 
 	msjErrorOpen	db	"El archivo no se pudo abrir",0
@@ -124,41 +124,6 @@ llenarVector:
     inc     qword[lenVector]
     ret
 
-
-imprimirVector:
-    cmp     qword[lenVector],0
-    je      finRecorrido
-
-    mov     rcx,msjEspacios
-    sub     rsp,32
-    call    printf
-    add     rsp,32
-
-    mov     rbx,0
-recorrido:
-    imul    rax,rbx,8
-    sub 	rdx,rdx
-
-    mov     rdx,[vector + rax]
-
-    inc     rbx
-
-    mov		rcx,numFormat
-    sub     rsp,32
-	call	printf
-    add     rsp,32
-
-    cmp     qword[lenVector],rbx
-    jne     recorrido
-
-finRecorrido:
-    mov     rcx,saltoDeLinea
-    sub     rsp,32
-    call    printf
-    add     rsp,32
-    ret
-
-
 pedirFormaOrd:
     mov     rcx,msjFormaOrd
     sub     rsp,32
@@ -182,7 +147,6 @@ insercion:
 
     call    ordenarVector
     
-
 finInsercion:
     ret
 
@@ -191,22 +155,21 @@ ordenarVector:
     mov     qword[posVector],1
 
 recorridoVector:
-    call    imprimirInicioCiclo_i
-
     call    ciclo_i
-
-    inc     qword[posVector]
-
 
     mov     rbx,qword[posVector]
     cmp     rbx,qword[lenVector]
-    jne      recorridoVector
+    jne     recorridoVector
     ret
 
 ciclo_i:
+    call    imprimirInicioCiclo_i
+    
     mov     rbx,qword[posVector]
 
     call    ciclo_j
+
+    inc     qword[posVector]
 
     ret
 
@@ -296,4 +259,38 @@ imprimirVectorFinal:
 	add		rsp,32
 
     call    imprimirVector
+    ret
+
+
+imprimirVector:
+    cmp     qword[lenVector],0
+    je      finRecorrido
+
+    mov     rcx,msjEspacios
+    sub     rsp,32
+    call    printf
+    add     rsp,32
+
+    mov     rbx,0
+recorrido:
+    imul    rax,rbx,8
+    sub 	rdx,rdx
+
+    mov     rdx,[vector + rax]
+
+    inc     rbx
+
+    mov		rcx,numFormat
+    sub     rsp,32
+	call	printf
+    add     rsp,32
+
+    cmp     qword[lenVector],rbx
+    jne     recorrido
+
+finRecorrido:
+    mov     rcx,saltoDeLinea
+    sub     rsp,32
+    call    printf
+    add     rsp,32
     ret
