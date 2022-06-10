@@ -8,14 +8,12 @@ extern	fread
 extern	fclose
 
 section	.data
-	numFormat	db	"%lli ",0
+	numFormat	db	" %lli |",0
 
 	fileName	db	"archivo_num3.dat",0
 	modo		db	"rb",0
 
 	msjErrorOpen	db	"El archivo no se pudo abrir",0
-    debug        db  "AAA",10,0
-    msjDebug        db  "%lli ",10,0
 
     lenVector   dq  0
     posVector   dq  0
@@ -25,12 +23,12 @@ section	.data
     msjVectorInicial    db  "Vector inicial:",0
     msjVectorFinal    db  "Vector final:",0
 
-    msjInicioCiclo_i  db  "Iniciando el ciclo de i = %lli menor a %lli",10,0
-    msjInicioCiclo_j  db  "     Iniciando el ciclo de j = %lli mayor a 0",10,0
+    msjCiclo_i  db  "Iniciando el ciclo de i = %lli menor a %lli",10,0
+    msjCiclo_j  db  "     Ciclo de j = %lli",10,0
 
     saltoDeLinea    db  "",10,0
 
-    msjEspacios     db  "           ",0
+    msjEspacios     db  "           |",0
 
 section .bss
 	fileHandle	resq	1
@@ -195,7 +193,6 @@ ciclo_j:
 finCiclo_j:
     ret
 
-
 swapAscendente:
     cmp     rcx,rdx
     jge     finSwap
@@ -232,7 +229,7 @@ imprimirVectorInicial:
     ret
 
 imprimirInicioCiclo_i:
-    mov		rcx,msjInicioCiclo_i
+    mov		rcx,msjCiclo_i
     mov     rdx,qword[posVector]
     mov     r8,qword[lenVector]
 	sub		rsp,32
@@ -241,16 +238,14 @@ imprimirInicioCiclo_i:
 
     ret
 
-
 imprimirInicioCiclo_j:
-    mov		rcx,msjInicioCiclo_j
+    mov		rcx,msjCiclo_j
     mov     rdx,rbx
 	sub		rsp,32
 	call	printf
 	add		rsp,32
 
     ret
-
 
 imprimirVectorFinal:
     mov		rcx,msjVectorFinal
@@ -260,7 +255,6 @@ imprimirVectorFinal:
 
     call    imprimirVector
     ret
-
 
 imprimirVector:
     cmp     qword[lenVector],0
