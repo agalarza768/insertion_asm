@@ -10,12 +10,13 @@ extern	fclose
 section	.data
 	numFormat	db	" %lli |",0
 
-	fileName	db	"archivo_num3.dat",0
+	fileName	db	"archivo_num31.dat",0
 	modo		db	"rb",0
 
 	msjErrorOpen	db	"El archivo no se pudo abrir",0
 
     lenVector   dq  0
+    lenMaxVector    dq  30
     posVector   dq  0
 
     msjFormaOrd     db  "Ordenar de forma ascendente (A) o descendente (D):",0
@@ -111,9 +112,13 @@ EOF:
 
 
 llenarVector:
+
     mov     rbx,0
 
     mov     rbx,qword[lenVector]
+    cmp     rbx,qword[lenMaxVector]
+    je      finLlenado
+
     imul    rbx,8
 
     mov     rcx,qword[numero]
@@ -132,7 +137,7 @@ pedirFormaOrd:
     sub     rsp,32
     call    gets
     add     rsp,32
-
+finLlenado:
     ret
 
 
@@ -152,14 +157,6 @@ finInsercion:
 ordenarVector:
     mov     qword[posVector],1
 
-recorridoVector:
-    call    ciclo_i
-
-    mov     rbx,qword[posVector]
-    cmp     rbx,qword[lenVector]
-    jne     recorridoVector
-    ret
-
 ciclo_i:
     call    imprimirInicioCiclo_i
     
@@ -169,6 +166,10 @@ ciclo_i:
 
     inc     qword[posVector]
 
+    mov     rbx,qword[posVector]
+    cmp     rbx,qword[lenVector]
+    jne     ciclo_i
+
     ret
 
 ciclo_j:
@@ -176,7 +177,6 @@ ciclo_j:
     cmp     rbx,0
     je      finCiclo_j
 
-    sub     rax,rax
     imul    rax,rbx,8
 
     mov     rcx,[vector + rax]
