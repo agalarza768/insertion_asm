@@ -8,28 +8,28 @@ extern	fread
 extern	fclose
 
 section	.data
-	numFormat	db	" %lli |",0
-
 	fileName	db	"archivo_num31.dat",0
 	modo		db	"rb",0
 
-	msjErrorOpen	db	"El archivo no se pudo abrir",0
+	msjErrorOpen    db	"El archivo no se pudo abrir",0
 
-    lenVector   dq  0
+    lenVector       dq  0
     lenMaxVector    dq  30
-    posVector   dq  0
+    posVector       dq  0
 
     msjFormaOrd     db  "Ordenar de forma ascendente (A) o descendente (D):",0
 
     msjVectorInicial    db  "Vector inicial:",0
-    msjVectorFinal    db  "Vector final:",0
+    msjVectorFinal      db  "Vector final:",0
 
-    msjCiclo_i  db  "Iniciando el ciclo de i = %lli menor a %lli",10,0
-    msjCiclo_j  db  "     Ciclo de j = %lli",10,0
+    msjCiclo_i  db  "Iniciando el ciclo de i = %lli menor a %lli:",10,0
+    msjCiclo_j  db  "     Ciclo de j = %lli:",10,0
 
     saltoDeLinea    db  "",10,0
 
-    msjEspacios     db  "           |",0
+    inicioMsjVector     db  "           |",0
+    numVector	        db	" %lli |",0
+    msjVectorSinCambios    db  "           No se producen cambios.",0
 
 section .bss
 	fileHandle	resq	1
@@ -41,8 +41,6 @@ section .bss
 
     formaOrd    resb    1
 
-    numeroValido    resb    1
-
 section  .text
 main:
 	call    abrirArchivo
@@ -51,14 +49,10 @@ main:
     jle     errorOpen
 
     call    leerArchivo
-
-    call    pedirFormaOrd
-    
     call    insercion
-
-    call    imprimirVectorFinal
 endProgram:
     ret
+    
 
 abrirArchivo:
     mov     rcx,fileName
@@ -70,6 +64,7 @@ abrirArchivo:
     mov     qword[fileHandle],rax
     ret
 
+
 errorOpen:
     mov     rcx,msjErrorOpen
     sub     rsp,32
@@ -77,6 +72,7 @@ errorOpen:
     add     rsp,32
 
     jmp     endProgram
+
 
 leerArchivo:
 
@@ -107,7 +103,6 @@ EOF:
     sub     rsp,32
     call    fclose
     add     rsp,32
-
     ret
 
 
@@ -125,7 +120,9 @@ llenarVector:
     mov     [vector + rbx], rcx
 
     inc     qword[lenVector]
+finLlenado:
     ret
+
 
 pedirFormaOrd:
     mov     rcx,msjFormaOrd
@@ -137,20 +134,18 @@ pedirFormaOrd:
     sub     rsp,32
     call    gets
     add     rsp,32
-finLlenado:
     ret
-
-
 
 insercion:
     cmp     qword[lenVector],1
     jle     finInsercion
 
+    call    pedirFormaOrd
     call    imprimirVectorInicial
-
     call    ordenarVector
     
 finInsercion:
+    call    imprimirVectorFinal
     ret
 
 
@@ -159,24 +154,27 @@ ordenarVector:
 
 ciclo_i:
     call    imprimirInicioCiclo_i
-    
     mov     rbx,qword[posVector]
 
-    call    ciclo_j
+ciclo_j:
+    cmp     rbx,0
+    je      finCiclo_j
 
+    call    imprimirInicioCiclo_j
+    call    ordenarNumeros
+
+    jmp     ciclo_j
+
+finCiclo_j:
     inc     qword[posVector]
 
     mov     rbx,qword[posVector]
     cmp     rbx,qword[lenVector]
     jne     ciclo_i
-
     ret
 
-ciclo_j:
 
-    cmp     rbx,0
-    je      finCiclo_j
-
+ordenarNumeros:
     imul    rax,rbx,8
 
     mov     rcx,[vector + rax]
@@ -188,36 +186,70 @@ ciclo_j:
     cmp     byte[formaOrd],'D'
     je      swapDescendente
 
-    jmp     ciclo_j
+estanOrdenados:
+    mov     rbx,0
+    call    imprimirMsjSinCambios
 
-finCiclo_j:
+finOrdenamiento:
     ret
 
 swapAscendente:
     cmp     rcx,rdx
-    jge     finSwap
+    jl      swap
 
-    jmp     swap
+    jmp     estanOrdenados
 
 swapDescendente:
     cmp     rcx,rdx
-    jle     finSwap
+    jg      swap
+
+    jmp     estanOrdenados
 
 swap:
     mov     [vector + rax],rdx
     mov     [vector + rax - 8],rcx
 
-    call    imprimirInicioCiclo_j
-    dec     rbx
-
     push    rbx
     call    imprimirVector
     pop     rbx
 
-    jmp     ciclo_j
+    dec     rbx
+    jmp     finOrdenamiento
 
-finSwap:
+
+imprimirVector:
+    cmp     qword[lenVector],0
+    je      finRecorrido
+
+    mov     rcx,inicioMsjVector
+    sub     rsp,32
+    call    printf
+    add     rsp,32
+
+    mov     rbx,0
+recorrido:
+    imul    rax,rbx,8
+    sub 	rdx,rdx
+
+    mov     rdx,[vector + rax]
+
+    inc     rbx
+
+    mov		rcx,numVector
+    sub     rsp,32
+	call	printf
+    add     rsp,32
+
+    cmp     qword[lenVector],rbx
+    jne     recorrido
+
+finRecorrido:
+    mov     rcx,saltoDeLinea
+    sub     rsp,32
+    call    printf
+    add     rsp,32
     ret
+
 
 imprimirVectorInicial:
     mov		rcx,msjVectorInicial
@@ -256,35 +288,10 @@ imprimirVectorFinal:
     call    imprimirVector
     ret
 
-imprimirVector:
-    cmp     qword[lenVector],0
-    je      finRecorrido
+imprimirMsjSinCambios:
+    mov		rcx,msjVectorSinCambios
+	sub		rsp,32
+	call	puts
+	add		rsp,32
 
-    mov     rcx,msjEspacios
-    sub     rsp,32
-    call    printf
-    add     rsp,32
-
-    mov     rbx,0
-recorrido:
-    imul    rax,rbx,8
-    sub 	rdx,rdx
-
-    mov     rdx,[vector + rax]
-
-    inc     rbx
-
-    mov		rcx,numFormat
-    sub     rsp,32
-	call	printf
-    add     rsp,32
-
-    cmp     qword[lenVector],rbx
-    jne     recorrido
-
-finRecorrido:
-    mov     rcx,saltoDeLinea
-    sub     rsp,32
-    call    printf
-    add     rsp,32
     ret
