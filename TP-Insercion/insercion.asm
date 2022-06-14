@@ -8,7 +8,7 @@ extern	fread
 extern	fclose
 
 section	.data
-	fileName	db	"archivo_num31.dat",0
+	fileName	db	"archivo_num3.dat",0
 	modo		db	"rb",0
 
 	msjErrorOpen    db	"El archivo no se pudo abrir",0
@@ -17,7 +17,7 @@ section	.data
     lenMaxVector    dq  30
     posVector       dq  0
 
-    msjFormaOrd     db  "Ordenar de forma ascendente (A) o descendente (D):",0
+    msjFormaOrden     db  "Ordenar de forma ascendente (A) o descendente (D):",0
 
     msjVectorInicial    db  "Vector inicial:",0
     msjVectorFinal      db  "Vector final:",0
@@ -39,7 +39,7 @@ section .bss
 
 	vector      times   30  resq    1
 
-    formaOrd    resb    1
+    formaOrden    resb    1
 
 section  .text
 main:
@@ -124,23 +124,34 @@ finLlenado:
     ret
 
 
-pedirFormaOrd:
-    mov     rcx,msjFormaOrd
+pedirFormaOrden:
+    mov     rcx,msjFormaOrden
     sub     rsp,32
     call    puts
     add     rsp,32
 
-    mov     rcx,formaOrd
+    mov     rcx,formaOrden
     sub     rsp,32
     call    gets
     add     rsp,32
+
+    mov     al,byte[formaOrden]
+    cmp     al,"A"
+    je      finPedirFormaOrden
+
+    mov     al,byte[formaOrden]
+    cmp     al,"D"
+    je      finPedirFormaOrden
+
+    jmp     pedirFormaOrden
+finPedirFormaOrden:
     ret
 
 insercion:
     cmp     qword[lenVector],1
     jle     finInsercion
 
-    call    pedirFormaOrd
+    call    pedirFormaOrden
     call    imprimirVectorInicial
     call    ordenarVector
     
@@ -180,10 +191,10 @@ ordenarNumeros:
     mov     rcx,[vector + rax]
     mov     rdx,[vector + rax - 8]
 
-    cmp     byte[formaOrd],'A'
+    cmp     byte[formaOrden],'A'
     je      swapAscendente
 
-    cmp     byte[formaOrd],'D'
+    cmp     byte[formaOrden],'D'
     je      swapDescendente
 
 estanOrdenados:
