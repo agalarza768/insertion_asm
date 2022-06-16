@@ -21,6 +21,7 @@ section	.data
 
     msjVectorInicial    db  "Vector inicial:",0
     msjVectorFinal      db  "Vector final:",0
+    msjVectorVacio      db  "Vector vacio",0
 
     msjCiclo_i  db  "Iniciando el ciclo de i = %lli menor a %lli:",10,0
     msjCiclo_j  db  "     Ciclo de j = %lli:",10,0
@@ -49,10 +50,22 @@ main:
     jle     errorOpen
 
     call    leerArchivo
+
+    cmp     qword[lenVector],0
+    je      imprimirVectorVacio
+
     call    insercion
 endProgram:
     ret
-    
+
+imprimirVectorVacio:
+    mov		rcx,msjVectorVacio
+	sub		rsp,32
+	call	puts
+	add		rsp,32
+
+    jmp     endProgram
+
 
 abrirArchivo:
     mov     rcx,fileName
@@ -261,7 +274,6 @@ finRecorrido:
     add     rsp,32
     ret
 
-
 imprimirVectorInicial:
     mov		rcx,msjVectorInicial
 	sub		rsp,32
@@ -269,6 +281,23 @@ imprimirVectorInicial:
 	add		rsp,32
 
     call    imprimirVector
+    ret
+
+imprimirVectorFinal:
+    mov		rcx,msjVectorFinal
+	sub		rsp,32
+	call	puts
+	add		rsp,32
+
+    call    imprimirVector
+    ret
+
+imprimirMsjSinCambios:
+    mov		rcx,msjVectorSinCambios
+	sub		rsp,32
+	call	puts
+	add		rsp,32
+
     ret
 
 imprimirInicioCiclo_i:
@@ -286,23 +315,6 @@ imprimirInicioCiclo_j:
     mov     rdx,rbx
 	sub		rsp,32
 	call	printf
-	add		rsp,32
-
-    ret
-
-imprimirVectorFinal:
-    mov		rcx,msjVectorFinal
-	sub		rsp,32
-	call	puts
-	add		rsp,32
-
-    call    imprimirVector
-    ret
-
-imprimirMsjSinCambios:
-    mov		rcx,msjVectorSinCambios
-	sub		rsp,32
-	call	puts
 	add		rsp,32
 
     ret
