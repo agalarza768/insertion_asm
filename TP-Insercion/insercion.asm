@@ -7,42 +7,45 @@ extern	fread
 extern	fclose
 
 section	.data
-	fileName    db	"archivo_num3.dat",0
-	modo	    db	"rb",0
+    msjFileName             db  "Ingrese nombre del archivo:",10,0
+	modo	                db	"rb",0
 
-	msjErrorOpen    db	"El archivo no se pudo abrir",10,0
+	msjErrorOpen            db	"El archivo no se pudo abrir",10,0
 
-    lenVector       dq  0
-    lenMaxVector    dq  30
-    posVector       dq  0
+    lenVector               dq  0
+    lenMaxVector            dq  30
+    posVector               dq  0
 
-    msjFormaOrden     db  "Ordenar de forma ascendente (A) o descendente (D):",10,0
+    msjFormaOrden           db  "Ordenar de forma ascendente (A) o descendente (D):",10,0
 
-    msjVectorInicial    db  "Vector inicial:",0
-    msjVectorFinal      db  "Vector final:",0
-    msjVectorVacio      db  "Vector vacio",10,0
+    msjVectorInicial        db  "Vector inicial:",0
+    msjVectorFinal          db  "Vector final:",0
+    msjVectorVacio          db  "Vector vacio",10,0
 
-    msjCiclo_i      db  "Iniciando el ciclo de i = %lli menor a %lli:",10,0
-    msjCiclo_j      db  "     Ciclo de j = %lli:",10,0
+    msjCiclo_i              db  "Iniciando el ciclo de i = %lli menor a %lli:",10,0
+    msjCiclo_j              db  "     Ciclo de j = %lli:",10,0
 
-    saltoDeLinea    db  "",10,0
+    saltoDeLinea            db  "",10,0
 
     inicioMsjVector         db  "           |",0
     numVector	            db	" %lli |",0
     msjVectorSinCambios     db  "           No se producen cambios.",10,0
 
 section .bss
-	fileHandle      resq	1
-	registro        resb	3
+    fileName                resb    50
 
-    numero          resq    1
+	fileHandle              resq	1
+	registro                resb	3
 
-	vector          times   30  resq    1
+    numero                  resq    1
 
-    formaOrden      resb    1
+	vector                  times   30  resq    1
+
+    formaOrden               resb    1
 
 section  .text
 main:
+    call    ingresarNombreArchivo
 	call    abrirArchivo
 
     cmp     qword[fileHandle],0
@@ -62,6 +65,18 @@ imprimirVectorVacio:
     call    imprimirMensaje
 
     jmp     endProgram
+
+
+ingresarNombreArchivo:
+    mov		rcx,msjFileName
+    call    imprimirMensaje
+
+    mov     rcx,fileName
+    sub     rsp,32
+    call    gets
+    add     rsp,32
+
+    ret
 
 
 abrirArchivo:
@@ -161,12 +176,12 @@ insercion:
     call    pedirFormaOrden
 
     mov		rcx,msjVectorInicial
-    call    imprimirVector
+    call    imprimirEstadoVector
     call    ordenarVector
     
 finInsercion:
     mov		rcx,msjVectorFinal
-    call    imprimirVector
+    call    imprimirEstadoVector
     ret
 
 
@@ -239,14 +254,14 @@ swap:
     mov     [vector + rax - 8],rcx
 
     push    rbx
-    call    printVector
+    call    imprimirVector
     pop     rbx
 
     dec     rbx
     jmp     finOrdenamiento
 
 
-printVector:
+imprimirVector:
     cmp     qword[lenVector],0
     je      finRecorrido
 
@@ -273,12 +288,12 @@ finRecorrido:
     call    imprimirMensaje
     ret
 
-imprimirVector:
+imprimirEstadoVector:
     sub		rsp,32
 	call	puts
 	add		rsp,32
 
-    call    printVector
+    call    imprimirVector
     ret
 
 imprimirMensaje:
