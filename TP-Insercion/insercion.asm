@@ -20,7 +20,8 @@ section	.data
 
     msjVectorInicial        db  "Vector inicial:",0
     msjVectorFinal          db  "Vector final:",0
-    msjVectorVacio          db  "Vector vacio",10,0
+
+    msjArchivoVacio          db  "Archivo vacio",10,0
 
     msjCiclo_i              db  "Iniciando el ciclo de i = %lli menor a %lli:",10,0
     msjCiclo_j              db  "     Ciclo de j = %lli:",10,0
@@ -54,14 +55,14 @@ main:
     call    leerArchivo
 
     cmp     qword[lenVector],0
-    je      imprimirVectorVacio
+    je      imprimirArchivoVacio
 
     call    insercion
 endProgram:
     ret
 
-imprimirVectorVacio:
-    mov		rcx,msjVectorVacio
+imprimirArchivoVacio:
+    mov		rcx,msjArchivoVacio
     call    imprimirMensaje
 
     jmp     endProgram
