@@ -73,10 +73,7 @@ ingresarNombreArchivo:
     call    imprimirMensaje
 
     mov     rcx,fileName
-    sub     rsp,32
-    call    gets
-    add     rsp,32
-
+    call    ingresarDatos
     ret
 
 
@@ -148,28 +145,6 @@ finLlenado:
     ret
 
 
-pedirFormaOrden:
-    mov     rcx,msjFormaOrden
-    call    imprimirMensaje
-
-    mov     rcx,formaOrden
-    sub     rsp,32
-    call    gets
-    add     rsp,32
-
-    mov     al,byte[formaOrden]
-    cmp     al,"A"
-    je      finPedirFormaOrden
-
-    mov     al,byte[formaOrden]
-    cmp     al,"D"
-    je      finPedirFormaOrden
-
-    jmp     pedirFormaOrden
-finPedirFormaOrden:
-    ret
-
-
 insercion:
     cmp     qword[lenVector],1
     jle     finInsercion
@@ -186,9 +161,28 @@ finInsercion:
     ret
 
 
+pedirFormaOrden:
+    mov     rcx,msjFormaOrden
+    call    imprimirMensaje
+
+    mov     rcx,formaOrden
+    call    ingresarDatos
+
+    mov     al,byte[formaOrden]
+    cmp     al,"A"
+    je      finPedirFormaOrden
+
+    mov     al,byte[formaOrden]
+    cmp     al,"D"
+    je      finPedirFormaOrden
+
+    jmp     pedirFormaOrden
+finPedirFormaOrden:
+    ret
+
+
 ordenarVector:
     mov     qword[posVector],1
-
 ciclo_i:
     mov		rcx,msjCiclo_i
     mov     rdx,qword[posVector]
@@ -272,7 +266,6 @@ imprimirVector:
     mov     rbx,0
 recorrido:
     imul    rax,rbx,8
-    sub 	rdx,rdx
 
     mov     rdx,[vector + rax]
 
@@ -301,5 +294,11 @@ imprimirMensaje:
 	sub		rsp,32
 	call	printf
 	add		rsp,32
+    ret
 
+
+ingresarDatos:
+    sub     rsp,32
+    call    gets
+    add     rsp,32
     ret
