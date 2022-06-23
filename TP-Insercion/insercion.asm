@@ -109,12 +109,6 @@ leerRegistros:
     cmp     rax,0
     jle     EOF
 
-    mov     al,byte[registro]
-    cbw
-    cwde
-    cdqe
-    mov     qword[numero],rax
-
     call    llenarVector
 
     jmp     leerRegistros
@@ -137,8 +131,11 @@ llenarVector:
 
     imul    rbx,8
 
-    mov     rcx,qword[numero]
-    mov     [vector + rbx], rcx
+    mov     al,byte[registro]
+    cbw
+    cwde
+    cdqe
+    mov     [vector + rbx], rax
 
     inc     qword[lenVector]
 finLlenado:
@@ -213,10 +210,10 @@ finCiclo_j:
 
 
 ordenarNumeros:
-    imul    rax,rbx,8
+    imul    r8,rbx,8
 
-    mov     rcx,[vector + rax]
-    mov     rdx,[vector + rax - 8]
+    mov     rcx,[vector + r8]
+    mov     rdx,[vector + r8 - 8]
 
     cmp     byte[formaOrden],'A'
     je      swapAscendente
@@ -234,19 +231,20 @@ finOrdenamiento:
 
 swapAscendente:
     cmp     rcx,rdx
-    jl      swap
+    jge     estanOrdenados
 
-    jmp     estanOrdenados
+    jmp     swap
 
 swapDescendente:
     cmp     rcx,rdx
-    jg      swap
+    jle     estanOrdenados
 
-    jmp     estanOrdenados
+continuar:
+    jmp     swap
 
 swap:
-    mov     [vector + rax],rdx
-    mov     [vector + rax - 8],rcx
+    mov     [vector + r8],rdx
+    mov     [vector + r8 - 8],rcx
 
     push    rbx
     call    imprimirVector
@@ -266,7 +264,6 @@ imprimirVector:
     mov     rbx,0
 recorrido:
     imul    rax,rbx,8
-
     mov     rdx,[vector + rax]
 
     inc     rbx
@@ -282,6 +279,7 @@ finRecorrido:
     call    imprimirMensaje
     ret
 
+
 imprimirEstadoVector:
     sub		rsp,32
 	call	puts
@@ -289,6 +287,7 @@ imprimirEstadoVector:
 
     call    imprimirVector
     ret
+
 
 imprimirMensaje:
 	sub		rsp,32
