@@ -34,12 +34,10 @@ section	.data
 
 section .bss
     fileName                resb    50
-
 	fileHandle              resq	1
 	registro                resb	3
 
     numero                  resq    1
-
 	vector                  times   30  resq    1
 
     formaOrden               resb    1
@@ -111,7 +109,9 @@ leerRegistros:
 
     call    llenarVector
 
-    jmp     leerRegistros
+    mov     rcx,qword[lenVector]
+    cmp     rcx,qword[lenMaxVector]
+    jl      leerRegistros
     
 EOF:
     mov     rcx,qword[fileHandle]
@@ -123,12 +123,7 @@ EOF:
 
 llenarVector:
 
-    mov     rbx,0
-
     mov     rbx,qword[lenVector]
-    cmp     rbx,qword[lenMaxVector]
-    je      finLlenado
-
     imul    rbx,8
 
     mov     al,byte[registro]
@@ -211,7 +206,6 @@ finCiclo_j:
 
 ordenarNumeros:
     imul    r8,rbx,8
-
     mov     rcx,[vector + r8]
     mov     rdx,[vector + r8 - 8]
 
@@ -233,25 +227,30 @@ swapAscendente:
     cmp     rcx,rdx
     jge     estanOrdenados
 
-    jmp     swap
+    jmp     continuarSwap
 
 swapDescendente:
     cmp     rcx,rdx
     jle     estanOrdenados
 
-continuar:
-    jmp     swap
+continuarSwap:
+    push    rbx
+    call    swap
+    pop     rbx
+
+    dec     rbx
+    jmp     finOrdenamiento
+
 
 swap:
     mov     [vector + r8],rdx
     mov     [vector + r8 - 8],rcx
 
-    push    rbx
     call    imprimirVector
-    pop     rbx
 
-    dec     rbx
-    jmp     finOrdenamiento
+    mov     rcx,saltoDeLinea
+    call    imprimirMensaje
+    ret
 
 
 imprimirVector:
