@@ -227,13 +227,13 @@ swapAscendente:
     cmp     rcx,rdx
     jge     estanOrdenados
 
-    jmp     continuarSwap
+    jmp     realizarSwap
 
 swapDescendente:
     cmp     rcx,rdx
     jle     estanOrdenados
 
-continuarSwap:
+realizarSwap:
     push    rbx
     call    swap
     pop     rbx
