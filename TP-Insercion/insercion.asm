@@ -133,7 +133,6 @@ llenarVector:
     mov     [vector + rbx], rax
 
     inc     qword[lenVector]
-finLlenado:
     ret
 
 
@@ -145,8 +144,8 @@ insercion:
 
     mov		rcx,msjVectorInicial
     call    imprimirEstadoVector
+
     call    ordenarVector
-    
 finInsercion:
     mov		rcx,msjVectorFinal
     call    imprimirEstadoVector
